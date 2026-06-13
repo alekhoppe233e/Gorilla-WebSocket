@@ -134,3 +134,32 @@ func serveWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	go client.writePump()
 	go client.readPump()
 }
+
+
+package main
+
+import (
+	"github.com/gorilla/websocket"
+	"sync"
+)
+
+func main() {
+	conn := websocket.Conn{}
+	
+	// Create a channel to listen for the end of the connection
+	connectionEndChan := make(chan bool)
+	
+	// Listen on WebSocket (as a single goroutine, not via a loop)
+	go func() {
+		for { // Read from the client
+			msg, err := conn.Read()
+			if err != nil {
+				fmt.Println("Client disconnected")
+				close(connectionEndChan)
+			}
+			if len(msg) > 1024 {
+				return 
+			}
+		}
+	}()
+}
